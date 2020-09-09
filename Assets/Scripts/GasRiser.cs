@@ -21,8 +21,6 @@ namespace Robots
 
         private Vector3 _destination;
 
-        private ParticleSystem _particleSystem;
-
         private float _startHeight;
 
         private float _distanceToTravel;
@@ -49,95 +47,29 @@ namespace Robots
 
         private void Update()
         {
-            Tick2();
+            Tick();
         }
-        public void Tick2()
+        public void Tick()
         {
             //since we have a defined end distination that is managed outside of the class we do not need to distinguish between rising and separating the particles here
             var ownpos = transform.position;
             var direction = _destination - ownpos;
+            var distToDestination = direction.magnitude;
             var normalizedDir = direction.normalized;
+            //the vector describing the movement of the partice in this tick
+            var step = (normalizedDir * Speed * Time.deltaTime);
+
+            if (distToDestination <= step.magnitude)
+            {
+                transform.position = _destination;
+            }
+            else
+            {
+                transform.position += step;
+            }
             
-            transform.position += normalizedDir * Speed * Time.deltaTime;
-            //We do need to adjust the scale, but this is claculated independant of raycasts and other logic
+            //We do need to adjust the scale, but this is calculated independant of raycasts and other logic
             AdjustScale();
-        }
-
-        public void Tick()
-        {
-            var ownPos = this.transform.position;
-
-            //direction to the end destination
-            var dir = (_destination - ownPos);
-
-            var dirNorm = dir.normalized;
-
-            var vel = dirNorm * Speed * Time.deltaTime;
-
-            var dest = ownPos + vel;
-
-            //get the ground position for the next step
-            var ray = new Ray(ownPos + Vector3.up * 500f, Vector3.down);
-
-            if (!Physics.Raycast(ray, out RaycastHit hit, 1000f, GasOutputManager.Instance.TerrainLayerMask))
-            {
-                return;
-            }
-
-            var groundPos = hit.point;
-            dest.y = groundPos.y + _gasHeight;
-
-            if (_isRising)
-            {
-                //we are below the desired destination, so move vertically
-                Rise(ownPos, dest);
-                return;
-            }
-
-            var dirNextStep = (dest - ownPos);
-            var magDirNextStep = dirNextStep.magnitude;
-            var velNextStep = dirNextStep.normalized * Speed;
-            var magVelNextStep = velNextStep.magnitude;
-
-            if (magVelNextStep > magDirNextStep)
-            {
-                //set to position, if we are closer than the next step, to avoid overshooting
-                this.transform.position = dest;
-            }
-            else
-            {
-                this.transform.position += velNextStep;
-            }
-
-        }
-
-        private void Rise(Vector3 ownPos, Vector3 dest)
-        {
-            var velVertical = Vector3.up * Speed * Time.deltaTime;
-            var magVelVertical = velVertical.magnitude;
-            var distToDest = dest.y - ownPos.y;
-
-            if (magVelVertical < distToDest)
-            {
-                //move the gas upwards towards the destination
-                this.transform.position += velVertical;
-            }
-            else
-            {
-                //one step further would take us beyond the vertical destination, to snap the position to the vertical destination
-                ownPos.y = dest.y;
-                this.transform.position = ownPos;
-            }
-
-            if (ownPos.y >= dest.y)
-            {
-                _isRising = false;
-                ResetScale();
-            }
-            else
-            {
-                AdjustScale();
-            }
         }
 
         private void AdjustScale()

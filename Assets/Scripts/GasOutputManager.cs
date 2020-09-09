@@ -36,9 +36,9 @@ namespace Robots
         private float _nextSeparationTick = 0;
         
         /// <summary>
-        /// List handling the registration of system
+        /// List of active gas particles
         /// </summary>
-        private HashSet<GasRiser> _activeGas = new HashSet<GasRiser>();
+        private List<GasRiser> _activeGas = new List<GasRiser>();
 
         private Stopwatch _stopwatch;
 
@@ -50,7 +50,16 @@ namespace Robots
 
         private void Update()
         {
-            SeparateGas();
+            if (_nextSeparationTick < Mathf.Epsilon)
+            {
+                SeparateGas();
+                _nextSeparationTick = SeparationTickFrequency;
+            }
+            else
+            {
+                _nextSeparationTick--;
+            }
+            
         }
         
 
@@ -71,11 +80,9 @@ namespace Robots
         private void SeparateGas()
         {
             _stopwatch.Start();
-
-            //for (int i = 0; i < count; i++)
+            
             foreach (var gas in _activeGas)
             {
-                //var gas = _activeGas[i];
                 var self = gas.transform.position;
                 var separationVector = GetSeparationVector(_activeGas, gas, Separation);
 
@@ -98,6 +105,7 @@ namespace Robots
 
             if(_logDebug)
                 UnityEngine.Debug.Log("_stopwatch == " + _stopwatch.ElapsedMilliseconds + " " + _stopwatch.ElapsedTicks);
+            _stopwatch.Reset();
         }
         
         private Vector3 GetGasDestination(Vector3 exhaustPosition)
@@ -107,7 +115,7 @@ namespace Robots
             return pos;
         }
 
-        public Vector3 GetSeparationVector(HashSet<GasRiser> others, GasRiser self, float separation)
+        public Vector3 GetSeparationVector(List<GasRiser> others, GasRiser self, float separation)
         {
             var selfPos = self.transform.position;
 
