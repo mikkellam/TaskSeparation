@@ -50,13 +50,9 @@ namespace Robots
 
         private void Update()
         {
-            Tick();
+            SeparateGas();
         }
-
-        private void Tick()
-        {
-            SeparateGas(); ;
-        }
+        
 
         public void OutputGas(Vector3 exhaustPoint, GameObject GasPrefab)
         {

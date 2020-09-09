@@ -49,7 +49,18 @@ namespace Robots
 
         private void Update()
         {
-            Tick();
+            Tick2();
+        }
+        public void Tick2()
+        {
+            //since we have a defined end distination that is managed outside of the class we do not need to distinguish between rising and separating the particles here
+            var ownpos = transform.position;
+            var direction = _destination - ownpos;
+            var normalizedDir = direction.normalized;
+            
+            transform.position += normalizedDir * Speed * Time.deltaTime;
+            //We do need to adjust the scale, but this is claculated independant of raycasts and other logic
+            AdjustScale();
         }
 
         public void Tick()
@@ -62,8 +73,6 @@ namespace Robots
             var dirNorm = dir.normalized;
 
             var vel = dirNorm * Speed * Time.deltaTime;
-
-            var magVel = vel.magnitude;
 
             var dest = ownPos + vel;
 
@@ -99,6 +108,7 @@ namespace Robots
             {
                 this.transform.position += velNextStep;
             }
+
         }
 
         private void Rise(Vector3 ownPos, Vector3 dest)
